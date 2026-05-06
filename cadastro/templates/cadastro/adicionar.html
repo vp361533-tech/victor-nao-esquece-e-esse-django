@@ -5,56 +5,76 @@
 
 {% block conteudo %}
 
-<h2>Cadastrar Pessoa</h2>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-avatar">
+            <i class="ti ti-user-plus" style="font-size: 22px;"></i>
+        </div>
+        <div>
+            <h2 class="page-title">Cadastrar pessoa</h2>
+            <p class="page-subtitle">Preencha os dados abaixo para adicionar um novo cadastro.</p>
+        </div>
+    </div>
+</div>
 
-<form method="POST" style="margin-top: 20px;">
+<form method="POST">
     {% csrf_token %}
 
-    <fieldset style="border: 1.5px solid #C0392B44; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-        <legend style="color: #8B0000; font-weight: bold; font-size: 0.95em; padding: 0 8px;">Dados pessoais</legend>
-        {% for field in form %}
-        <p>
-            {{ field.label_tag }}
-            {{ field }}
-            {% if field.errors %}
-            <span style="color: #C0392B; font-size: 0.85em;">{{ field.errors|join:", " }}</span>
-            {% endif %}
-        </p>
-        {% endfor %}
-    </fieldset>
-
-    <fieldset style="border: 1.5px solid #C0392B44; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-        <legend style="color: #8B0000; font-weight: bold; font-size: 0.95em; padding: 0 8px;">Telefones</legend>
-
-        {{ formset.management_form }}
-
-        {% for tel_form in formset %}
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-            {{ tel_form.numero.label_tag }}
-            {{ tel_form.numero }}
-            {% if tel_form.can_delete %}
-            <label style="display: flex; align-items: center; gap: 4px; color: #8B0000; font-size: 0.9em; cursor: pointer;">
-                {{ tel_form.DELETE }}
-                Remover
-            </label>
-            {% endif %}
+    <div class="form-card">
+        <div class="form-card-header">
+            <i class="ti ti-user"></i>
+            Dados pessoais
         </div>
-        {% endfor %}
+        <div class="form-card-body">
+            {% for field in form %}
+            <div class="field-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                <span class="field-error">{{ field.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 
-        <button type="button" id="add-telefone" style="
-            margin-top: 8px;
-            background: transparent;
-            color: #8B0000;
-            border: 1.5px solid #8B0000;
-            border-radius: 4px;
-            padding: 6px 14px;
-            font-size: 0.9em;
-            cursor: pointer;
-        ">+ Adicionar telefone</button>
+    <div class="form-card">
+        <div class="form-card-header">
+            <i class="ti ti-phone"></i>
+            Telefones
+        </div>
+        <div class="form-card-body">
+            {{ formset.management_form }}
+            {% for tel_form in formset %}
+            <div class="telefone-row">
+                {{ tel_form.id }}
+                <div class="field-group" style="flex: 1;">
+                    {{ tel_form.numero.label_tag }}
+                    {{ tel_form.numero }}
+                </div>
+                {% if tel_form.can_delete %}
+                <label class="delete-label">
+                    {{ tel_form.DELETE }}
+                    <i class="ti ti-trash"></i> Remover
+                </label>
+                {% endif %}
+            </div>
+            {% endfor %}
 
-    </fieldset>
+            <button type="button" class="btn-add-tel" id="add-telefone">
+                <i class="ti ti-plus"></i> Adicionar telefone
+            </button>
+        </div>
+    </div>
 
-    <button type="submit">Salvar cadastro</button>
+    <div class="form-actions">
+        <button type="submit" class="btn-salvar">
+            <i class="ti ti-check"></i> Salvar cadastro
+        </button>
+        <a href="{% url 'index' %}" class="btn-cancelar">
+            Cancelar
+        </a>
+    </div>
 
 </form>
 

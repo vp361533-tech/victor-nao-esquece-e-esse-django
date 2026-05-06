@@ -1,52 +1,85 @@
 {# cadastro\templates\cadastro\editar.html #}
-
 {% extends 'cadastro/base.html' %}
 {% load static %}
 
 {% block titulo %}Editar {{ pessoa.nome }}{% endblock %}
 
 {% block conteudo %}
-<h2>Editar {{ pessoa.nome }}</h2>
+
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-avatar">{{ pessoa.nome|first|upper }}</div>
+        <div>
+            <h2 class="page-title">Editar perfil</h2>
+            <p class="page-subtitle">{{ pessoa.nome }}</p>
+        </div>
+    </div>
+    <a href="{% url 'detalhe' pessoa.id %}" class="btn-cancelar">
+        <i class="ti ti-arrow-left"></i> Voltar
+    </a>
+</div>
 
 <form method="POST">
     {% csrf_token %}
 
-    <h5 class="mt-3">Dados pessoais</h5>
-    {% for field in form %}
-    <p class="mb-3">
-        {{ field.label_tag }}
-        {{ field }}
-    </p>
-    {% endfor %}
-
-    <h5 class="mt-4">Telefones</h5>
-
-    {{ formset.management_form }}
-
-    {% for tel_form in formset %}
-    <div class="d-flex align-items-center gap-2 mb-3">
-        {{ tel_form.id }}
-        {{ tel_form.numero.label_tag }}
-        {{ tel_form.numero }}
-        {% if tel_form.can_delete %}
-        <div class="form-check ms-2">
-            {{ tel_form.DELETE }}
-            <label class="form-check-label text-danger" for="{{ tel_form.DELETE.id_for_label }}">
-                Remover
-            </label>
+    <div class="form-card">
+        <div class="form-card-header">
+            <i class="ti ti-user"></i>
+            Dados pessoais
         </div>
-        {% endif %}
+        <div class="form-card-body">
+            {% for field in form %}
+            <div class="field-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                <span class="field-error">{{ field.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
     </div>
-    {% endfor %}
 
-    <button type="button" class="btn btn-outline-secondary btn-sm mb-4" id="add-telefone">
-        + Adicionar telefone
-    </button>
+    <div class="form-card">
+        <div class="form-card-header">
+            <i class="ti ti-phone"></i>
+            Telefones
+        </div>
+        <div class="form-card-body">
+            {{ formset.management_form }}
+            {% for tel_form in formset %}
+            <div class="telefone-row">
+                {{ tel_form.id }}
+                <div class="field-group" style="flex: 1;">
+                    {{ tel_form.numero.label_tag }}
+                    {{ tel_form.numero }}
+                </div>
+                {% if tel_form.can_delete %}
+                <label class="delete-label">
+                    {{ tel_form.DELETE }}
+                    <i class="ti ti-trash"></i> Remover
+                </label>
+                {% endif %}
+            </div>
+            {% endfor %}
 
-    <br>
-    <button type="submit" class="btn btn-primary">Salvar</button>
-    <a href="{% url 'detalhe' pessoa.id %}" class="btn btn-secondary">Cancelar</a>
+            <button type="button" class="btn-add-tel" id="add-telefone">
+                <i class="ti ti-plus"></i> Adicionar telefone
+            </button>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-salvar">
+            <i class="ti ti-check"></i> Salvar alterações
+        </button>
+        <a href="{% url 'detalhe' pessoa.id %}" class="btn-cancelar">
+            Cancelar
+        </a>
+    </div>
+
 </form>
 
 <script src="{% static 'cadastro/js/editar.js' %}"></script>
+
 {% endblock %}

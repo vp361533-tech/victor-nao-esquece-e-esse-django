@@ -1,26 +1,55 @@
 {# cadastro\templates\cadastro\detalhe.html #}
-
 {% extends 'cadastro/base.html' %}
 
 {% block titulo %}{{ pessoa.nome }}{% endblock %}
 
 {% block conteudo %}
-<h2>{{ pessoa.nome }}</h2>
-<p><strong>Email:</strong> {{ pessoa.email }}</p>
-<p><strong>Idade:</strong> {{ pessoa.idade }} anos</p>
 
-<h2>Telefones</h2>
-<ul>
-    {% for telefone in pessoa.telefones.all %}
-    <li>{{ telefone.numero }}</li>
-    {% empty %}
-    <li>Nenhum telefone cadastrado.</li>
-    {% endfor %}
-</ul>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-avatar">{{ pessoa.nome|first|upper }}</div>
+        <div>
+            <h2 class="page-title">{{ pessoa.nome }}</h2>
+            <p class="page-subtitle">{{ pessoa.email }}</p>
+        </div>
+    </div>
+    <a href="{% url 'index' %}" class="btn-cancelar">
+        <i class="ti ti-arrow-left"></i> Voltar
+    </a>
+</div>
 
-{% if user.is_authenticated %}
-<a href="{% url 'editar' pessoa.id %}">Editar</a> |
-<a href="{% url 'deletar' pessoa.id %}">Apagar</a> |
-{% endif %}
-<a href="{% url 'index' %}">Voltar</a>
+<div class="form-card">
+    <div class="form-card-header">
+        <i class="ti ti-user"></i>
+        Dados pessoais
+    </div>
+    <div class="form-card-body">
+        <div class="field-group">
+            <label>Nome</label>
+            <p style="margin: 0; color: #1a0a0a;">{{ pessoa.nome }}</p>
+        </div>
+        <div class="field-group">
+            <label>Email</label>
+            <p style="margin: 0; color: #1a0a0a;">{{ pessoa.email }}</p>
+        </div>
+        {% if pessoa.telefones.all %}
+        <div class="field-group">
+            <label>Telefones</label>
+            {% for tel in pessoa.telefones.all %}
+            <p style="margin: 0; color: #1a0a0a;">{{ tel.numero }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="form-actions">
+    <a href="{% url 'editar' pessoa.id %}" class="btn-salvar">
+        <i class="ti ti-edit"></i> Editar
+    </a>
+    <a href="{% url 'deletar' pessoa.id %}" class="btn-deletar">
+        <i class="ti ti-trash"></i> Apagar
+    </a>
+</div>
+
 {% endblock %}

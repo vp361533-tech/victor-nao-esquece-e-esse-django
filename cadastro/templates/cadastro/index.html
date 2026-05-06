@@ -5,18 +5,47 @@
 
 {% block conteudo %}
 
-    <h2>{{ total }} Pessoas Cadastradas</h2>
-    
-    <ul>
+<p class="total-label" id="total-label">{{ total }} pessoa{{ total|pluralize }} cadastrada{{ total|pluralize }}</p>
+
+<div class="grid-pessoas" id="skeleton-grid" aria-hidden="true">
+    {% for i in "12345" %}
+    <div class="card-skeleton">
+        <div class="skeleton skeleton-avatar"></div>
+        <div class="skeleton skeleton-line-lg"></div>
+        <div class="skeleton skeleton-line-sm"></div>
+        <div class="skeleton skeleton-btn"></div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="grid-pessoas" id="cards-grid" style="display: none;">
     {% for pessoa in pessoas %}
-        <li>
-            <a href="{% url 'detalhe' pessoa.id %}">{{ pessoa.nome }}</a>
-             - {{ pessoa.email }}
-        </li>
+    <div class="card-pessoa">
+        <div class="avatar">{{ pessoa.nome|first|upper }}</div>
+        <p class="nome">{{ pessoa.nome }}</p>
+        <p class="email">{{ pessoa.email }}</p>
+        <a class="ver-btn" href="{% url 'detalhe' pessoa.id %}">Ver perfil →</a>
+    </div>
     {% empty %}
-        <li>Ninguém está cadastrado.</li>
-        
-    {% endfor%}
-    </ul>
+        <p>Ninguém está cadastrado.</p>
+    {% endfor %}
+</div>
+
+<script>
+    setTimeout(() => {
+        document.getElementById('skeleton-grid').style.display = 'none';
+        document.getElementById('cards-grid').style.display = 'grid';
+    }, 800);
+
+    const totalEl = document.getElementById('total-label');
+    const totalFinal = {{ total }};
+    let count = 0;
+    const step = Math.max(1, Math.ceil(totalFinal / (800 / 30)));
+    const counter = setInterval(() => {
+        count = Math.min(count + step, totalFinal);
+        totalEl.textContent = count + (count === 1 ? ' pessoa cadastrada' : ' pessoas cadastradas');
+        if (count >= totalFinal) clearInterval(counter);
+    }, 30);
+</script>
 
 {% endblock %}

@@ -1,18 +1,49 @@
 {# cadastro\templates\cadastro\contato.html #}
-
 {% extends 'cadastro/base.html' %}
 
-{% block titulo %} - Faça Contato{% endblock %}
+{% block titulo %} - Contato{% endblock %}
 
 {% block conteudo %}
 
-<h2>Faça Contato</h2>
-<p>Preencha todos os campos para falar conosco.</p>
+<div class="page-header">
+    <div class="page-header-info">
+        <div class="page-avatar">
+            <i class="ti ti-mail" style="font-size: 22px;"></i>
+        </div>
+        <div>
+            <h2 class="page-title">Fale conosco</h2>
+            <p class="page-subtitle">Preencha os campos abaixo e entraremos em contato.</p>
+        </div>
+    </div>
+</div>
 
 <form method="POST">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Enviar mensagem</button>
+
+    <div class="form-card">
+        <div class="form-card-header">
+            <i class="ti ti-message"></i>
+            Sua mensagem
+        </div>
+        <div class="form-card-body">
+            {% for field in form %}
+            <div class="field-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                <span class="field-error">{{ field.errors|join:", " }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn-salvar">
+            <i class="ti ti-send"></i> Enviar mensagem
+        </button>
+    </div>
+
 </form>
 
 {% endblock %}
