@@ -7,6 +7,8 @@ class Pessoa(models.Model):
     nome = models.CharField(max_length=100)
     email = models.EmailField()
     idade = models.IntegerField()
+    foto = models.ImageField(upload_to='fotos/', blank=True, null=True)
+    visualizacoes = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.nome
@@ -19,7 +21,8 @@ class Telefone(models.Model):
 
     def __str__(self):
         return self.numero
-    
+
+
 class Contato(models.Model):
     nome = models.CharField(max_length=127)
     email = models.EmailField()

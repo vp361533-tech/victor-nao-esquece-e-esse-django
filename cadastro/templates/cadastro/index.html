@@ -1,11 +1,41 @@
 {# cadastro\templates\cadastro\index.html #}
-
-{# `index.html` herda a estrutura de `base.html` #}
 {% extends 'cadastro/base.html' %}
 
 {% block conteudo %}
 
-<p class="total-label" id="total-label">{{ total }} pessoa{{ total|pluralize }} cadastrada{{ total|pluralize }}</p>
+{# ===== MAIS VISTOS ===== #}
+{% if mais_vistos %}
+<div class="section-header">
+    <i class="ti ti-flame" aria-hidden="true"></i>
+    <span>Mais vistos</span>
+</div>
+<div class="grid-mais-vistos">
+    {% for pessoa in mais_vistos %}
+    <a href="{% url 'detalhe' pessoa.id %}" class="card-destaque">
+        <div class="card-destaque-top">
+            {% if pessoa.foto %}
+            <img src="{{ pessoa.foto.url }}" class="card-destaque-av" alt="{{ pessoa.nome }}">
+            {% else %}
+            <div class="card-destaque-av card-destaque-inicial">{{ pessoa.nome|first|upper }}</div>
+            {% endif %}
+            <div class="card-destaque-views">
+                <i class="ti ti-eye" aria-hidden="true"></i> {{ pessoa.visualizacoes }}
+            </div>
+        </div>
+        <div class="card-destaque-body">
+            <p class="card-destaque-nome">{{ pessoa.nome }}</p>
+            <p class="card-destaque-email">{{ pessoa.email }}</p>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# ===== TODOS OS CADASTROS ===== #}
+<div class="section-header" style="margin-top: 1.5rem;">
+    <i class="ti ti-users" aria-hidden="true"></i>
+    <span id="total-label">{{ total }} pessoa{{ total|pluralize }} cadastrada{{ total|pluralize }}</span>
+</div>
 
 <div class="grid-pessoas" id="skeleton-grid" aria-hidden="true">
     {% for i in "12345" %}
@@ -18,13 +48,28 @@
     {% endfor %}
 </div>
 
-<div class="grid-pessoas" id="cards-grid" style="display: none;">
+<div class="grid-pessoas" id="cards-grid">
     {% for pessoa in pessoas %}
     <div class="card-pessoa">
-        <div class="avatar">{{ pessoa.nome|first|upper }}</div>
+        <div class="card-pessoa-top">
+            {% if pessoa.foto %}
+            <img src="{{ pessoa.foto.url }}" class="card-foto" alt="{{ pessoa.nome }}">
+            {% else %}
+            <div class="avatar">{{ pessoa.nome|first|upper }}</div>
+            {% endif %}
+            <div class="card-views">
+                <i class="ti ti-eye" aria-hidden="true"></i> {{ pessoa.visualizacoes }}
+            </div>
+        </div>
         <p class="nome">{{ pessoa.nome }}</p>
         <p class="email">{{ pessoa.email }}</p>
-        <a class="ver-btn" href="{% url 'detalhe' pessoa.id %}">Ver perfil →</a>
+        {% with pessoa.telefones.first as tel %}
+        {% if tel %}
+        <p class="card-tel"><i class="ti ti-phone" aria-hidden="true"></i> {{ tel.numero }}</p>
+        {% endif %}
+        {% endwith %}
+        <p class="card-idade"><i class="ti ti-cake" aria-hidden="true"></i> {{ pessoa.idade }} anos</p>
+        <a class="ver-btn" href="{% url 'detalhe' pessoa.id %}">Ver perfil <i class="ti ti-arrow-right" aria-hidden="true"></i></a>
     </div>
     {% empty %}
         <p>Ninguém está cadastrado.</p>
@@ -32,10 +77,10 @@
 </div>
 
 <script>
-    setTimeout(() => {
+    window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('skeleton-grid').style.display = 'none';
         document.getElementById('cards-grid').style.display = 'grid';
-    }, 800);
+    });
 
     const totalEl = document.getElementById('total-label');
     const totalFinal = {{ total }};

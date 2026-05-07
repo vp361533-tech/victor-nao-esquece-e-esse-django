@@ -22,6 +22,7 @@ def index(request):
         'pessoas': pessoas,
         'total': total,
     }
+    print ("-----",context)
     return render(request, 'cadastro/index.html', context)
 
 

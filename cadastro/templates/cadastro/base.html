@@ -15,85 +15,101 @@
         <div class="orb3"></div>
     </div>
 
-    <header>
-        <h1>{{ sitename }}</h1>
-    </header>
+    {# ===== SIDEBAR ===== #}
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">{{ sitename }}</h1>
+        </div>
 
-    {# ===== NAV COM LINK ATIVO ===== #}
-    <nav class="site-nav">
-        <div class="nav-links">
-            <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}"
+        <nav class="sidebar-nav">
+            <a class="sidebar-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}"
                href="{% url 'index' %}">
-                <i class="ti ti-home"></i> Início
+                <i class="ti ti-home" aria-hidden="true"></i>
+                <span>Início</span>
             </a>
-            <div class="nav-divider"></div>
-            <a class="nav-link {% if request.resolver_match.url_name == 'contato' %}active{% endif %}"
+            <a class="sidebar-link {% if request.resolver_match.url_name == 'contato' %}active{% endif %}"
                href="{% url 'contato' %}">
-                <i class="ti ti-mail"></i> Contato
+                <i class="ti ti-mail" aria-hidden="true"></i>
+                <span>Contato</span>
             </a>
             {% if user.is_authenticated %}
-            <div class="nav-divider"></div>
-            <a class="nav-link {% if request.resolver_match.url_name == 'adicionar' %}active{% endif %}"
+            <a class="sidebar-link {% if request.resolver_match.url_name == 'adicionar' %}active{% endif %}"
                href="{% url 'adicionar' %}">
-                <i class="ti ti-user-plus"></i> Adicionar
+                <i class="ti ti-user-plus" aria-hidden="true"></i>
+                <span>Adicionar</span>
             </a>
             {% endif %}
-        </div>
-        <div class="nav-user">
-            <button class="dark-toggle" id="dark-toggle" title="Alternar modo escuro">
-                <i class="ti ti-moon" id="dark-icon"></i>
-            </button>
+        </nav>
+
+        <div class="sidebar-footer">
             {% if user.is_authenticated %}
-            <span class="nav-greeting">Olá, {{ user.username }}!</span>
-            <form method="POST" action="{% url 'logout' %}" style="display: inline;">
+            <div class="sidebar-user">
+                <div class="sidebar-avatar">{{ user.username|first|upper }}</div>
+                <span class="sidebar-username">{{ user.username }}</span>
+            </div>
+            <form method="POST" action="{% url 'logout' %}">
                 {% csrf_token %}
-                <button type="submit" class="nav-btn">Sair</button>
+                <button type="submit" class="sidebar-logout">
+                    <i class="ti ti-logout" aria-hidden="true"></i>
+                    <span>Sair</span>
+                </button>
             </form>
             {% else %}
-            <a href="{% url 'login' %}" class="nav-btn-outline">Entrar</a>
+            <a href="{% url 'login' %}" class="sidebar-link">
+                <i class="ti ti-login" aria-hidden="true"></i>
+                <span>Entrar</span>
+            </a>
             {% endif %}
+            <button class="sidebar-link" id="dark-toggle" title="Alternar modo escuro">
+                <i class="ti ti-moon" id="dark-icon" aria-hidden="true"></i>
+                <span id="dark-label">Modo escuro</span>
+            </button>
         </div>
-    </nav>
+    </aside>
 
-    {# ===== BREADCRUMB (preenchido por cada página via bloco) ===== #}
-    {% block breadcrumb %}{% endblock %}
+    {# ===== CONTEÚDO PRINCIPAL ===== #}
+    <div class="main-wrapper">
+        {% if messages %}
+        <div class="toast-container" id="toast-container"></div>
+        {% endif %}
 
-    <main>
-        {% block conteudo %}{% endblock %}
-    </main>
+        {% block breadcrumb %}{% endblock %}
 
-    <footer>
-        <p>&copy; 2026 {{ dono }}</p>
-    </footer>
+        <main class="site-main">
+            {% block conteudo %}{% endblock %}
+        </main>
 
-    {# ===== TOAST CONTAINER ===== #}
-    <div class="toast-container" id="toast-container"></div>
+        <footer class="site-footer">
+            <p>&copy; 2026 {{ dono }}</p>
+        </footer>
+    </div>
 
-    {# ===== BOTÃO VOLTAR AO TOPO ===== #}
     <button id="back-to-top" title="Voltar ao topo">
-        <i class="ti ti-arrow-up"></i> Topo
+        <i class="ti ti-arrow-up"></i>
     </button>
 
     <script>
-        /* ── Dark mode ── */
         const toggle = document.getElementById('dark-toggle');
         const icon   = document.getElementById('dark-icon');
+        const label  = document.getElementById('dark-label');
 
         if (localStorage.getItem('darkMode') === 'on') {
             document.body.classList.add('dark-mode');
             icon.className = 'ti ti-sun';
+            label.textContent = 'Modo claro';
         }
 
         toggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const isDark = document.body.classList.contains('dark-mode');
             icon.className = isDark ? 'ti ti-sun' : 'ti ti-moon';
+            label.textContent = isDark ? 'Modo claro' : 'Modo escuro';
             localStorage.setItem('darkMode', isDark ? 'on' : 'off');
         });
 
-        /* ── Toast ── */
         function showToast(msg, type = 'success', duration = 4000) {
             const container = document.getElementById('toast-container');
+            if (!container) return;
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
             toast.innerHTML = `
@@ -111,78 +127,19 @@
             setTimeout(() => el.remove(), 300);
         }
 
-        /* Converte mensagens Django em toasts */
-        {% if messages %}
-        window.addEventListener('DOMContentLoaded', () => {
+        const djangoMessages = [
+            {% if messages %}
             {% for message in messages %}
-            showToast(
-                "{{ message|escapejs }}",
-                "{{ message.tags }}" === "success" ? "success" : "error"
-            );
+            { text: "{{ message|escapejs }}", type: "{{ message.tags }}" }{% if not forloop.last %},{% endif %}
             {% endfor %}
-        });
-        {% endif %}
+            {% endif %}
+        ];
 
         window.addEventListener('DOMContentLoaded', () => {
+            djangoMessages.forEach(msg => {
+                showToast(msg.text, msg.type === 'success' ? 'success' : 'error');
+            });
 
-            /* ── Scroll reveal nos cards ── */
-            const revealCards = () => {
-                document.querySelectorAll('.card-pessoa:not(.hidden)').forEach((card, i) => {
-                    const rect = card.getBoundingClientRect();
-                    if (rect.top < window.innerHeight - 40) {
-                        setTimeout(() => card.classList.add('visible'), i * 60);
-                    }
-                });
-            };
-            window.addEventListener('scroll', revealCards, { passive: true });
-            revealCards();
-
-            /* ── Busca em tempo real ── */
-            const grid = document.querySelector('.grid-pessoas');
-            if (grid) {
-                const searchWrapper = document.createElement('div');
-                searchWrapper.className = 'search-bar';
-                searchWrapper.innerHTML = `
-                    <i class="ti ti-search"></i>
-                    <input type="text" id="busca-input" placeholder="Buscar por nome ou e-mail…" autocomplete="off">
-                `;
-                grid.parentElement.insertBefore(searchWrapper, grid);
-
-                document.getElementById('busca-input').addEventListener('input', function () {
-                    const q = this.value.toLowerCase().trim();
-                    document.querySelectorAll('.card-pessoa').forEach(card => {
-                        const nome  = card.querySelector('.nome')?.textContent.toLowerCase() || '';
-                        const email = card.querySelector('.email')?.textContent.toLowerCase() || '';
-                        const hide  = q !== '' && !nome.includes(q) && !email.includes(q);
-                        card.classList.toggle('hidden', hide);
-                        if (!hide) card.classList.add('visible');
-                    });
-                });
-            }
-
-            /* ── Contador animado ── */
-            const label = document.querySelector('.total-label');
-            if (label) {
-                const total = document.querySelectorAll('.card-pessoa').length;
-                const match = label.textContent.match(/\d+/);
-                if (match) {
-                    const spanNum = document.createElement('span');
-                    spanNum.className = 'count-num';
-                    spanNum.textContent = '0';
-                    label.textContent = label.textContent.replace(match[0], '');
-                    label.prepend(spanNum);
-                    let start = null;
-                    function animateCount(ts) {
-                        if (!start) start = ts;
-                        const progress = Math.min((ts - start) / 900, 1);
-                        spanNum.textContent = Math.round(progress * total);
-                        if (progress < 1) requestAnimationFrame(animateCount);
-                    }
-                    requestAnimationFrame(animateCount);
-                }
-            }
-
-            /* ── Botão voltar ao topo ── */
             const topBtn = document.getElementById('back-to-top');
             window.addEventListener('scroll', () => {
                 topBtn.classList.toggle('visible', window.scrollY > 320);
@@ -190,71 +147,6 @@
             topBtn.addEventListener('click', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
-
-            /* ── Auto-formatação de telefone ── */
-            document.querySelectorAll('input[type="tel"]').forEach(input => {
-                input.addEventListener('input', function () {
-                    let v = this.value.replace(/\D/g, '').slice(0, 11);
-                    if (v.length > 10) {
-                        v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
-                    } else if (v.length > 6) {
-                        v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
-                    } else if (v.length > 2) {
-                        v = v.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
-                    } else if (v.length > 0) {
-                        v = v.replace(/^(\d{0,2})$/, '($1');
-                    }
-                    this.value = v;
-                });
-            });
-
-            /* ── Validação em tempo real ── */
-            const validators = {
-                email: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
-                tel:   v => v.replace(/\D/g, '').length >= 10,
-                text:  v => v.trim().length >= 2,
-                number: v => v.trim() !== '' && !isNaN(v),
-                password: v => v.length >= 6,
-            };
-
-            const hints = {
-                email:    { ok: 'E-mail válido', err: 'Digite um e-mail válido' },
-                tel:      { ok: 'Telefone válido', err: 'Digite um telefone com DDD' },
-                text:     { ok: '', err: 'Campo obrigatório (mín. 2 caracteres)' },
-                number:   { ok: '', err: 'Digite um número válido' },
-                password: { ok: 'Senha válida', err: 'Mínimo 6 caracteres' },
-            };
-
-            document.querySelectorAll('.form-card-body input, .form-card-body textarea, .form-card-body select').forEach(input => {
-                if (input.type === 'checkbox') return;
-
-                const type = input.type in validators ? input.type : 'text';
-                let hint = input.parentElement.querySelector('.field-hint');
-                if (!hint) {
-                    hint = document.createElement('span');
-                    hint.className = 'field-hint';
-                    input.parentElement.appendChild(hint);
-                }
-
-                input.addEventListener('blur', function () {
-                    if (!this.value && !this.required) return;
-                    const ok = validators[type]?.(this.value) ?? true;
-                    this.classList.toggle('input-ok', ok);
-                    this.classList.toggle('input-err', !ok);
-                    hint.textContent = ok ? hints[type]?.ok || '' : hints[type]?.err || 'Campo inválido';
-                    hint.className   = 'field-hint ' + (ok ? 'ok' : 'err');
-                });
-
-                input.addEventListener('input', function () {
-                    if (!this.classList.contains('input-err') && !this.classList.contains('input-ok')) return;
-                    const ok = validators[type]?.(this.value) ?? true;
-                    this.classList.toggle('input-ok', ok);
-                    this.classList.toggle('input-err', !ok);
-                    hint.textContent = ok ? hints[type]?.ok || '' : hints[type]?.err || 'Campo inválido';
-                    hint.className   = 'field-hint ' + (ok ? 'ok' : 'err');
-                });
-            });
-
         });
     </script>
 </body>
