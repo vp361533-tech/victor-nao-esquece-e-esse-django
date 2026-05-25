@@ -1,4 +1,5 @@
 # core\settings.py
+import os
 
 """
 Django settings for core project.
